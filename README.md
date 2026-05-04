@@ -27,6 +27,11 @@ pip install -r requirements.txt
 pip install -e . --no-deps
 ```
 
+The package includes a compiled StarDist-style C++ NMS extension for fast
+polygon suppression. When building from source, a C++ compiler is needed to
+compile it; if the extension is not available, inference automatically falls
+back to the slower pure-Python NMS implementation.
+
 ## Convert and Predict
 
 ```bash
@@ -52,7 +57,8 @@ labels, details = model.predict_instances(image)
 
 - 2D grayscale inference
 - Keras `.h5` Conv2D weight conversion via `h5py`
-- StarDist-style polygon postprocessing with vendored BSD-compatible 2D geometry
+- StarDist-style polygon postprocessing with compiled C++ NMS and vendored
+  BSD-compatible 2D geometry
 - No training, no TensorFlow reference tests, no 3D, no multiclass models
 
 ## Attribution
