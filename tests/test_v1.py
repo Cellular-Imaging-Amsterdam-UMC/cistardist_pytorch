@@ -69,6 +69,17 @@ class V1ModelTests(unittest.TestCase):
         self.assertEqual(prob.shape, (33, 33))
         self.assertEqual(dist.shape, (33, 33, 32))
 
+    def test_compiled_nms_suppresses_identical_polygon(self):
+        try:
+            from cistardist_pytorch._c_nms import c_non_max_suppression_inds
+        except ModuleNotFoundError:
+            self.skipTest("compiled NMS extension is not built")
+
+        dist = np.full((2, 32), 10, dtype=np.float32)
+        points = np.array([[20, 20], [20, 20]], dtype=np.float32)
+        keep = c_non_max_suppression_inds(dist, points, 1, 1, 0, np.float32(0.3))
+        self.assertEqual(keep.tolist(), [True, False])
+
 
 if __name__ == "__main__":
     unittest.main()

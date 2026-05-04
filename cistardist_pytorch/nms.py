@@ -6,6 +6,31 @@ from skimage.draw import polygon
 from .geometry import dist_to_coord
 
 
+def _compiled_non_maximum_suppression_inds(
+    dist: np.ndarray,
+    points: np.ndarray,
+    nms_thresh: float,
+    use_bbox: bool = True,
+    use_kdtree: bool = True,
+    verbose: bool = False,
+) -> np.ndarray | None:
+    try:
+        from ._c_nms import c_non_max_suppression_inds
+    except ImportError:
+        return None
+
+    dist = np.ascontiguousarray(dist.astype(np.float32, copy=False))
+    points = np.ascontiguousarray(points.astype(np.float32, copy=False))
+    return c_non_max_suppression_inds(
+        dist,
+        points,
+        int(use_kdtree),
+        int(use_bbox),
+        int(verbose),
+        np.float32(nms_thresh),
+    )
+
+
 def _candidate_mask(prob: np.ndarray, prob_thresh: float, b: int | None = 2) -> np.ndarray:
     mask = prob > prob_thresh
     if b is not None and b > 0:
@@ -64,6 +89,10 @@ def non_maximum_suppression(
     prob_thresh: float = 0.5,
     nms_thresh: float = 0.5,
     b: int | None = 2,
+    use_compiled: bool = True,
+    use_bbox: bool = True,
+    use_kdtree: bool = True,
+    verbose: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Pure Python 2D StarDist polygon NMS.
 
@@ -94,8 +123,20 @@ def non_maximum_suppression(
     points = points[order]
     scores = scores[order]
     candidate_dist = candidate_dist[order]
-    coords = dist_to_coord(candidate_dist, points)
+    if use_compiled:
+        keep_mask = _compiled_non_maximum_suppression_inds(
+            candidate_dist,
+            points,
+            nms_thresh=nms_thresh,
+            use_bbox=use_bbox,
+            use_kdtree=use_kdtree,
+            verbose=verbose,
+        )
+        if keep_mask is not None:
+            keep_mask = np.asarray(keep_mask, dtype=bool)
+            return points[keep_mask], scores[keep_mask], candidate_dist[keep_mask]
 
+    coords = dist_to_coord(candidate_dist, points)
     canvas_shape = tuple(int(s) for s in (np.asarray(prob.shape) * np.asarray(grid)))
     kept: list[int] = []
     bboxes: list[tuple[int, int, int, int]] = []

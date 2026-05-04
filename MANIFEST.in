@@ -5,6 +5,7 @@ include requirements.txt
 include pyproject.toml
 
 recursive-include cistardist_pytorch *.py
+recursive-include cistardist_pytorch/lib *.cpp *.hpp *.txt
 recursive-include tests *.py
 
 recursive-exclude data *

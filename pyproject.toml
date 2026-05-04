@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "numpy"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cistardist_pytorch"
-version = "0.1.0"
+version = "0.2.0"
 description = "PyTorch-only StarDist 2D inference for Keras H5 StarDist weights."
 readme = "README.md"
 requires-python = ">=3.10"
