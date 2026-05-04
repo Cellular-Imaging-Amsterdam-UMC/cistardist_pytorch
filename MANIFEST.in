@@ -1,0 +1,17 @@
+include README.md
+include LICENSE
+include NOTICE.md
+include requirements.txt
+include pyproject.toml
+
+recursive-include cistardist_pytorch *.py
+recursive-include tests *.py
+
+recursive-exclude data *
+recursive-exclude models *
+recursive-exclude outputs *
+recursive-exclude dist *
+recursive-exclude build *
+recursive-exclude *.egg-info *
+global-exclude __pycache__/*
+global-exclude *.py[cod]

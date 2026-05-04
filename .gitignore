@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+build/
+dist/
+
+outputs/
+*.pt
+
+publish.cmd
+pypitoken.txt
+.pypirc
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
