@@ -1,13 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from numpy import get_include
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
-
-
-ROOT = Path(__file__).resolve().parent
 
 
 class BuildExtOpenMP(build_ext):
@@ -48,9 +43,9 @@ class BuildExtOpenMP(build_ext):
         return super().build_extension(ext)
 
 
-lib_dir = ROOT / "cistardist_pytorch" / "lib"
-clipper_dir = lib_dir / "external" / "clipper"
-nanoflann_dir = lib_dir / "external" / "nanoflann"
+lib_dir = "cistardist_pytorch/lib"
+clipper_dir = f"{lib_dir}/external/clipper"
+nanoflann_dir = f"{lib_dir}/external/nanoflann"
 
 
 setup(
@@ -59,13 +54,13 @@ setup(
         Extension(
             "cistardist_pytorch._c_nms",
             sources=[
-                str(lib_dir / "c_nms.cpp"),
-                str(clipper_dir / "clipper.cpp"),
+                f"{lib_dir}/c_nms.cpp",
+                f"{clipper_dir}/clipper.cpp",
             ],
             include_dirs=[
                 get_include(),
-                str(clipper_dir),
-                str(nanoflann_dir),
+                clipper_dir,
+                nanoflann_dir,
             ],
             extra_compile_args=["-std=c++11"],
             define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],

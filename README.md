@@ -30,7 +30,8 @@ pip install -e . --no-deps
 The package includes a compiled StarDist-style C++ NMS extension for fast
 polygon suppression. When building from source, a C++ compiler is needed to
 compile it; if the extension is not available, inference automatically falls
-back to the slower pure-Python NMS implementation.
+back to the slower pure-Python NMS implementation. See `COMPILE_NMS.md` for
+detailed build instructions.
 
 ## Convert and Predict
 
