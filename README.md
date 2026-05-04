@@ -8,8 +8,17 @@ upstream `stardist` Python package.
 
 ## Install
 
-PyTorch is intentionally installed from `requirements.txt` so you can choose the
-CUDA build explicitly.
+The package is published on PyPI:
+https://pypi.org/project/cistardist-pytorch/
+
+Install the library with:
+
+```bash
+pip install cistardist-pytorch
+```
+
+PyTorch is intentionally not pinned by the package, so you can choose the CPU or
+CUDA build that matches your environment. For this repo's CUDA 12.6 setup, use:
 
 ```bash
 conda create -n cistardist_pytorch python=3.10
@@ -17,15 +26,6 @@ conda activate cistardist_pytorch
 pip install -r requirements.txt
 pip install -e . --no-deps
 ```
-
-After the package is published, install it with:
-
-```bash
-pip install cistardist_pytorch
-```
-
-If you need the CUDA-specific PyTorch wheel, install PyTorch first using this
-repo's `requirements.txt` or your own environment policy.
 
 ## Convert and Predict
 
