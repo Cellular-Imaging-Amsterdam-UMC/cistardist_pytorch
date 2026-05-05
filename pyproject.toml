@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cistardist_pytorch"
-version = "0.3.1"
+version = "0.4.0"
 description = "PyTorch-only StarDist 2D inference for Keras H5 StarDist weights."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
 keywords = ["stardist", "pytorch", "segmentation", "nuclei", "bioimage"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -32,6 +32,7 @@ dependencies = [
 [project.scripts]
 cistardist-convert = "cistardist_pytorch.cli:main_convert"
 cistardist-predict = "cistardist_pytorch.cli:main_predict"
+cistardist-predict-fromdoi = "cistardist_pytorch.cli:main_predict_fromdoi"
 
 [tool.setuptools.packages.find]
 include = ["cistardist_pytorch"]

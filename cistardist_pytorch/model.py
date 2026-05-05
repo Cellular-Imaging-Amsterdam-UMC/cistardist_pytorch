@@ -75,6 +75,24 @@ class StarDist2D:
         net.load_state_dict(state_dict)
         return cls(net=net, config=config, thresholds=thresholds, device=device)
 
+    @classmethod
+    def from_checkpoint(cls, pt_path: str | Path, device: str | torch.device = "auto") -> "StarDist2D":
+        """Load a self-contained .pt checkpoint that embeds config and thresholds."""
+        pt_path = Path(pt_path)
+        checkpoint = torch.load(pt_path, map_location="cpu")
+        config_dict = checkpoint.get("config")
+        if config_dict is None:
+            raise ValueError(
+                f"{pt_path} does not contain an embedded 'config' key. "
+                "Use from_folder() for checkpoints stored alongside a config.json."
+            )
+        config = StarDist2DConfig.from_dict(config_dict)
+        state_dict = checkpoint.get("state_dict", checkpoint)
+        thresholds = checkpoint.get("thresholds") or {"prob": 0.5, "nms": 0.4}
+        net = StarDist2DNet(config)
+        net.load_state_dict(state_dict)
+        return cls(net=net, config=config, thresholds=thresholds, device=device)
+
     def _prepare_image(self, image: np.ndarray, normalize: bool) -> tuple[np.ndarray, tuple[int, int], tuple[int, int]]:
         image = np.asarray(image)
         if image.ndim == 3 and image.shape[-1] == 1:
