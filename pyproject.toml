@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cistardist_pytorch"
-version = "0.3.0"
+version = "0.3.1"
 description = "PyTorch-only StarDist 2D inference for Keras H5 StarDist weights."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,4 +34,4 @@ cistardist-convert = "cistardist_pytorch.cli:main_convert"
 cistardist-predict = "cistardist_pytorch.cli:main_predict"
 
 [tool.setuptools.packages.find]
-include = ["cistardist_pytorch*"]
+include = ["cistardist_pytorch"]
