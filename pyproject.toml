@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cistardist_pytorch"
-version = "0.4.0"
+version = "0.4.1"
 description = "PyTorch-only StarDist 2D inference for Keras H5 StarDist weights."
 readme = "README.md"
 requires-python = ">=3.10"
