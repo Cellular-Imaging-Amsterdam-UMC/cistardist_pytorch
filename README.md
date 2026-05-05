@@ -6,6 +6,8 @@ weights. The first target model is `models/SD_Nuclei_Versatile`.
 This repo intentionally does not depend on TensorFlow, Keras, CSBDeep, or the
 upstream `stardist` Python package.
 
+**GitHub:** https://github.com/Cellular-Imaging-Amsterdam-UMC/cistardist_pytorch
+
 ## Install
 
 The package is published on PyPI:
