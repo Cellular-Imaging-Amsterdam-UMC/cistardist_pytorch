@@ -64,31 +64,33 @@ class StarDist2D:
             raise FileNotFoundError(f"Missing config.json in {model_dir}. V1 requires config.json.")
 
         config = StarDist2DConfig.from_json(config_path)
+
+        # Try expected name (from train_checkpoint), then any .pt in the folder.
         pt_path = model_dir / f"{Path(config.train_checkpoint).stem}.pt"
         if not pt_path.exists():
-            convert_model_folder(model_dir)
+            pt_files = sorted(model_dir.glob("*.pt"))
+            if pt_files:
+                pt_path = pt_files[0]
+            else:
+                convert_model_folder(model_dir)
+                pt_path = model_dir / f"{model_dir.name}.pt"
 
         checkpoint = torch.load(pt_path, map_location="cpu")
         state_dict = checkpoint.get("state_dict", checkpoint)
-        thresholds = checkpoint.get("thresholds") or load_thresholds(model_dir / "thresholds.json")
+        thresholds = load_thresholds(model_dir / "thresholds.json")
         net = StarDist2DNet(config)
         net.load_state_dict(state_dict)
         return cls(net=net, config=config, thresholds=thresholds, device=device)
 
     @classmethod
     def from_checkpoint(cls, pt_path: str | Path, device: str | torch.device = "auto") -> "StarDist2D":
-        """Load a self-contained .pt checkpoint that embeds config and thresholds."""
+        """Load from a .pt weights file alongside config.json and thresholds.json in the same folder."""
         pt_path = Path(pt_path)
+        model_dir = pt_path.parent
+        config = StarDist2DConfig.from_json(model_dir / "config.json")
         checkpoint = torch.load(pt_path, map_location="cpu")
-        config_dict = checkpoint.get("config")
-        if config_dict is None:
-            raise ValueError(
-                f"{pt_path} does not contain an embedded 'config' key. "
-                "Use from_folder() for checkpoints stored alongside a config.json."
-            )
-        config = StarDist2DConfig.from_dict(config_dict)
         state_dict = checkpoint.get("state_dict", checkpoint)
-        thresholds = checkpoint.get("thresholds") or {"prob": 0.5, "nms": 0.4}
+        thresholds = load_thresholds(model_dir / "thresholds.json")
         net = StarDist2DNet(config)
         net.load_state_dict(state_dict)
         return cls(net=net, config=config, thresholds=thresholds, device=device)

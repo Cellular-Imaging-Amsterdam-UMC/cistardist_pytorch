@@ -13,6 +13,7 @@ import tifffile
 import torch
 
 from cistardist_pytorch.cli import (
+    _auto_convert_h5,
     _default_models_dir,
     _doi_to_folder_name,
     _download_doi,
@@ -331,6 +332,8 @@ def resolve_model(doi: str, models_dir: Path, no_cache: bool) -> Path:
             print(f"Title: {title_path.read_text(encoding='utf-8').strip()}")
         print(f"Using cached model folder: {model_folder}")
 
+    if not pt_files:
+        pt_files = _auto_convert_h5(model_folder)
     if not pt_files:
         raise FileNotFoundError(f"No .pt file found in {model_folder} after download.")
     if len(pt_files) > 1:

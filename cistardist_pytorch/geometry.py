@@ -3,6 +3,12 @@ from __future__ import annotations
 import numpy as np
 from skimage.draw import polygon
 
+try:
+    import cv2 as _cv2
+    _HAVE_CV2 = True
+except ImportError:
+    _HAVE_CV2 = False
+
 
 def ray_angles(n_rays: int = 32) -> np.ndarray:
     return np.linspace(0, 2 * np.pi, int(n_rays), endpoint=False)
@@ -51,7 +57,15 @@ def polygons_to_label(
     coord = dist_to_coord(dist[order], points[order], scale_dist=scale_dist)
 
     labels = np.zeros(shape, dtype=np.int32)
-    for label_id, poly in enumerate(coord, start=1):
-        rr, cc = polygon(poly[0], poly[1], shape)
-        labels[rr, cc] = label_id
+    if _HAVE_CV2:
+        # Fast path: cv2.fillPoly is C++ and handles the whole polygon in one call.
+        for label_id, poly in enumerate(coord, start=1):
+            # poly is (2, n_rays) with row/col; cv2 wants (n_pts, 1, 2) as x(col),y(row)
+            pts = np.stack([poly[1], poly[0]], axis=-1).astype(np.int32).reshape(-1, 1, 2)
+            _cv2.fillPoly(labels, [pts], color=label_id)
+    else:
+        # Fallback: skimage polygon rasterization
+        for label_id, poly in enumerate(coord, start=1):
+            rr, cc = polygon(poly[0], poly[1], shape)
+            labels[rr, cc] = label_id
     return labels

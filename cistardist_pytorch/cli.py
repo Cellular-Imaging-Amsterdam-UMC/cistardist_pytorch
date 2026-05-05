@@ -99,6 +99,18 @@ def _find_pt_files(folder: Path) -> list[Path]:
     return sorted(folder.glob("*.pt"))
 
 
+def _auto_convert_h5(folder: Path) -> list[Path]:
+    """If the folder has a config.json + .h5 but no .pt, run the converter."""
+    if (folder / "config.json").exists():
+        h5_files = sorted(folder.glob("*.h5"))
+        if h5_files:
+            print(f"No .pt found — converting {h5_files[0].name} to PyTorch checkpoint...")
+            from .converter import convert_model_folder
+            convert_model_folder(folder, weights_name=h5_files[0].name)
+            return _find_pt_files(folder)
+    return []
+
+
 def main_predict_fromdoi() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -151,7 +163,14 @@ def main_predict_fromdoi() -> None:
         print(f"Using cached model folder: {model_folder}")
 
     if not pt_files:
-        raise FileNotFoundError(f"No .pt file found in {model_folder} after download.")
+        pt_files = _auto_convert_h5(model_folder)
+    if not pt_files:
+        raise FileNotFoundError(
+            f"No .pt file found in {model_folder} after download.\n"
+            "The Zenodo record may only contain a .h5 file without a config.json.\n"
+            "Upload a converted .pt (run cistardist-convert locally first) or add "
+            "config.json + thresholds.json to the Zenodo record."
+        )
     if len(pt_files) > 1:
         names = [p.name for p in pt_files]
         raise RuntimeError(f"Multiple .pt files found in {model_folder}: {names}. Specify which to use.")

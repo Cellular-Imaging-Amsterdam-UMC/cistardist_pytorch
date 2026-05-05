@@ -55,8 +55,11 @@ cistardist-convert models/SD_Nuclei_Versatile
 cistardist-predict models/SD_Nuclei_Versatile data/nuclei.tif --out outputs/nuclei_labels.tif
 ```
 
-The converter reads `config.json`, `thresholds.json`, and `weights_best.h5`.
-It writes a PyTorch checkpoint next to the source model as `weights_best.pt`.
+The converter reads `config.json`, `thresholds.json`, and `weights_best.h5`
+from the model folder and writes `SD_Nuclei_Versatile.pt` (named after the
+folder) into that same folder. The `.pt` file contains only the network
+weights; `config.json` and `thresholds.json` must always be present in the
+same folder.
 
 ## Predict from a Zenodo DOI
 
@@ -66,6 +69,20 @@ inference in a single command:
 ```bash
 cistardist-predict-fromdoi 10.5281/zenodo.20038194 data/nuclei.tif --out outputs/nuclei_labels.tif
 ```
+
+### Example record: SD_Nuclei_Versatile
+
+**Zenodo:** https://zenodo.org/records/20038194  
+**DOI:** `10.5281/zenodo.20038194`
+
+This record contains the `SD_Nuclei_Versatile` model. For the DOI-based
+workflow to work, the Zenodo record must contain **all three files**:
+
+| File | Description |
+|------|-------------|
+| `SD_Nuclei_Versatile.pt` | PyTorch checkpoint |
+| `config.json` | Model architecture settings |
+| `thresholds.json` | Default probability and NMS thresholds |
 
 All files for the record are downloaded with `zenodo_get` and cached in
 `~/.cistardist_pytorch/models/10.5281_zenodo.20038194/` (the DOI with `/`

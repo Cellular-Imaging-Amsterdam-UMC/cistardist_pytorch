@@ -140,14 +140,28 @@ def convert_model_folder(
     if not h5_path.exists():
         raise FileNotFoundError(f"Missing Keras weights file: {h5_path}")
 
-    output_name = output_name or f"{h5_path.stem}.pt"
+    output_name = output_name or f"{model_dir.name}.pt"
     output_path = model_dir / output_name
+    thresholds = load_thresholds(model_dir / "thresholds.json")
     state_dict, report = convert_h5_to_state_dict(h5_path, config)
     checkpoint = {
         "state_dict": state_dict,
-        "config": config.as_dict(),
-        "thresholds": load_thresholds(model_dir / "thresholds.json"),
         "conversion": report,
     }
     torch.save(checkpoint, output_path)
+
+    # Also write config.json and thresholds.json next to the .pt so the whole
+    # output folder can be uploaded to Zenodo as a complete, self-describing record.
+    out_config = output_path.parent / "config.json"
+    if not out_config.exists():
+        with out_config.open("w", encoding="utf-8") as fh:
+            import json as _json
+            _json.dump(config.as_dict(), fh, indent=2)
+
+    out_thresh = output_path.parent / "thresholds.json"
+    if not out_thresh.exists():
+        with out_thresh.open("w", encoding="utf-8") as fh:
+            import json as _json
+            _json.dump(thresholds, fh, indent=2)
+
     return output_path, report
