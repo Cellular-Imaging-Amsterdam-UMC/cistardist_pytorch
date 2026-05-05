@@ -19,7 +19,14 @@ Install the library with:
 pip install cistardist-pytorch
 ```
 
-To use the Zenodo DOI download feature, also install `zenodo-get`:
+To include the Zenodo DOI download feature (`cistardist-predict-fromdoi`), install
+the `zenodo` extra:
+
+```bash
+pip install cistardist-pytorch[zenodo]
+```
+
+Or add it separately to an existing install:
 
 ```bash
 pip install zenodo-get
