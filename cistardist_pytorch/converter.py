@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,36 @@ def _load_keras_conv(h5: h5py.File, layer_name: str) -> tuple[np.ndarray, np.nda
     return _find_dataset(group, "kernel:0"), _find_dataset(group, "bias:0")
 
 
+def _remap_conv2d_name(name: str, offset: int) -> str:
+    """Apply an index offset to a conv2d_N layer name.
+
+    Keras names the first global conv2d as 'conv2d' (no suffix), then 'conv2d_1', etc.
+    When the model was saved in a fresh Keras session offset is 0 and names start at
+    'conv2d_1'.  Older/different models start at 'conv2d' (offset -1 relative to the
+    net names which always begin at index 1).
+    """
+    m = re.match(r"^conv2d_(\d+)$", name)
+    if not m:
+        return name
+    n = int(m.group(1)) + offset
+    return "conv2d" if n == 0 else f"conv2d_{n}"
+
+
+def _detect_conv2d_offset(available: set[str], net_layer_names: list[str]) -> int:
+    """Return the index offset to apply to conv2d_N net names to match H5 names.
+
+    Returns 0 (no change) or -1 (H5 uses 0-based Keras numbering).
+    """
+    stem = [n for n in net_layer_names if re.match(r"^conv2d_\d+$", n)]
+    if not stem:
+        return 0
+    if all(n in available for n in stem):
+        return 0
+    if all(_remap_conv2d_name(n, -1) in available for n in stem):
+        return -1
+    return 0
+
+
 def convert_h5_to_state_dict(h5_path: str | Path, config: StarDist2DConfig) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
     net = StarDist2DNet(config)
     state = net.state_dict()
@@ -52,12 +83,18 @@ def convert_h5_to_state_dict(h5_path: str | Path, config: StarDist2DConfig) -> t
 
     with h5py.File(h5_path, "r") as h5:
         available = set(list_h5_layers(h5_path))
-        missing = [name for name in net.keras_layer_names if name not in available]
+        offset = _detect_conv2d_offset(available, net.keras_layer_names)
+        missing = [
+            _remap_conv2d_name(name, offset)
+            for name in net.keras_layer_names
+            if _remap_conv2d_name(name, offset) not in available
+        ]
         if missing:
             raise KeyError(f"The H5 file is missing expected StarDist layers: {missing}")
 
         for layer_name in net.keras_layer_names:
-            kernel, bias = _load_keras_conv(h5, layer_name)
+            h5_layer_name = _remap_conv2d_name(layer_name, offset)
+            kernel, bias = _load_keras_conv(h5, h5_layer_name)
             weight_key = f"layers.{layer_name}.weight"
             bias_key = f"layers.{layer_name}.bias"
 
